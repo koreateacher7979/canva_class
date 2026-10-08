@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="ko" class="light">
+<head>
+    <meta charset="UTF-8">
+    <!-- 모바일 최적화 및 화면 확대 방지 (앱처럼 동작하도록 설정) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>캔바(Canva) 완벽 활용 가이드 연수</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Pretendard', 'Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        canva: {
+                            blue: '#00c4cc',
+                            purple: '#8a3ffc',
+                            dark: '#0e1318',
+                        }
+                    },
+                    height: {
+                        'screen-dvh': '100dvh', // 동적 뷰포트 높이 지원
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        
+        body {
+            font-family: 'Pretendard', sans-serif;
+            /* 모바일에서 당겨서 새로고침 방지 등 앱스러운 경험 제공 */
+            overscroll-behavior-y: none;
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #00c4cc 0%, #8a3ffc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Custom Scrollbar for inner content */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 10px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #4b5563; 
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+        
+        /* 탭 애니메이션 */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 호버 이펙트 */
+        .hover-lift {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .hover-lift:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* 숨김 스크롤바 (모바일 탭메뉴용) */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+
+<body class="h-screen-dvh w-full overflow-hidden flex flex-col bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-200 transition-colors duration-300">
+
+    <!-- Top Navigation Bar (고정 높이) -->
+    <nav class="shrink-0 h-16 w-full bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-4 sm:px-6 shadow-sm z-30 relative">
+        <div class="flex flex-col truncate pr-2">
+            <span class="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 font-semibold tracking-tight">개발자: 가치있는 미래교육 연구소 대표 김병찬</span>
+            <span id="nav-title" class="text-sm sm:text-lg font-bold gradient-text truncate">데이터 동기화 중...</span>
+        </div>
+        
+        <div class="flex items-center space-x-2 sm:space-x-4 shrink-0">
+            <!-- Theme Toggle -->
+            <button id="theme-toggle" class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-600 dark:text-gray-300">
+                <i class="fas fa-moon text-lg" id="theme-icon"></i>
+            </button>
+            <!-- Admin Auth Button -->
+            <button onclick="openAdminModal()" class="flex items-center justify-center px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-bold rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700 transition border border-gray-200 dark:border-gray-700 shadow-sm">
+                <i class="fas fa-lock sm:mr-2"></i><span class="hidden sm:inline">관리자 인증</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Category Tabs (고정 높이, 가로 스크롤 가능) -->
+    <div class="shrink-0 h-14 w-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 z-20 flex px-2 sm:px-6 overflow-x-auto no-scrollbar">
+        <div class="flex space-x-1 sm:space-x-2 min-w-max items-end">
+            <!-- 탭 버튼들 -->
+            <button class="tab-btn active px-4 py-3 sm:px-6 text-sm sm:text-base font-bold border-b-2 border-blue-500 text-blue-600 dark:text-blue-400 transition-colors" data-target="tab-part1">
+                <i class="fas fa-id-card mr-1.5"></i>파트1: 교육용 계정
+            </button>
+            <button class="tab-btn px-4 py-3 sm:px-6 text-sm sm:text-base font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 transition-colors" data-target="tab-part2">
+                <i class="fas fa-palette mr-1.5"></i>파트2: 기초 활용
+            </button>
+            <button class="tab-btn px-4 py-3 sm:px-6 text-sm sm:text-base font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 transition-colors" data-target="tab-part3">
+                <i class="fas fa-book-open mr-1.5"></i>파트3: 사용 설명서
+            </button>
+            <button class="tab-btn px-4 py-3 sm:px-6 text-sm sm:text-base font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 transition-colors" data-target="tab-part4">
+                <i class="fas fa-layer-group mr-1.5"></i>파트4: 대량 제작
+            </button>
+            <button class="tab-btn px-4 py-3 sm:px-6 text-sm sm:text-base font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 transition-colors" data-target="tab-practice">
+                <i class="fas fa-database mr-1.5"></i>실습 데이터
+            </button>
+            <button class="tab-btn px-4 py-3 sm:px-6 text-sm sm:text-base font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 transition-colors" data-target="tab-reference">
+                <i class="fas fa-link mr-1.5"></i>참고 사이트
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content Area (나머지 화면 전체를 채우며 내부 스크롤) -->
+    <main class="flex-1 w-full overflow-y-auto overflow-x-hidden relative bg-gray-50 dark:bg-[#0a0e13]">
+        <div class="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 h-full">
+
+            <!-- ==================== 파트 1 탭 ==================== -->
+            <section id="tab-part1" class="tab-content active min-h-full">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700/50 p-6 sm:p-8 min-h-full">
+                    <div class="flex flex-col sm:flex-row sm:items-center mb-8 border-b border-gray-100 dark:border-gray-700 pb-4">
+                        <span class="inline-flex items-center justify-center w-12 h-12 bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-300 rounded-xl font-black text-2xl mb-4 sm:mb-0 sm:mr-4">1</span>
+                        <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white">교사를 위한 최고의 선물, 캔바 교육용 계정</h2>
+                    </div>
+                    
+                    <div class="space-y-10 text-gray-700 dark:text-gray-300">
+                        <!-- 혜택 안내 -->
+                        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-5 sm:p-6 rounded-2xl border border-blue-100 dark:border-blue-800/30">
+                            <h3 class="font-bold text-lg sm:text-xl mb-3 text-blue-800 dark:text-blue-300"><i class="fas fa-gift text-pink-500 mr-2"></i>왜 교육용 계정(Canva for Education)인가요?</h3>
+                            <p class="mb-4 leading-relaxed">캔바는 전 세계 교사와 학생들에게 프리미엄(유료) 기능을 <strong>평생 100% 무료</strong>로 제공합니다. 복잡한 설치 없이 인터넷만 연결되어 있다면 언제 어디서나 고퀄리티 수업 자료를 제작할 수 있습니다.</p>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+                                <div class="bg-white/80 dark:bg-gray-800/80 p-4 rounded-xl shadow-sm hover-lift">
+                                    <i class="fas fa-crown text-yellow-500 text-xl mb-2"></i>
+                                    <h4 class="font-bold text-gray-900 dark:text-white mb-1">프리미엄 콘텐츠</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">수백만 개의 왕관 마크(유료) 템플릿, 폰트, 고화질 일러스트 무제한 사용</p>
+                                </div>
+                                <div class="bg-white/80 dark:bg-gray-800/80 p-4 rounded-xl shadow-sm hover-lift">
+                                    <i class="fas fa-magic text-purple-500 text-xl mb-2"></i>
+                                    <h4 class="font-bold text-gray-900 dark:text-white mb-1">매직 스튜디오 AI</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">클릭 한 번으로 배경 지우기, 매직 텍스트 등 캔바 최신 AI 도구 제공</p>
+                                </div>
+                                <div class="bg-white/80 dark:bg-gray-800/80 p-4 rounded-xl shadow-sm hover-lift">
+                                    <i class="fas fa-users text-green-500 text-xl mb-2"></i>
+                                    <h4 class="font-bold text-gray-900 dark:text-white mb-1">학급 및 협업</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">온라인 학급을 개설하여 학생들을 초대하고 과제를 배포/검토/피드백</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 인증 단계 -->
+                        <div class="group">
+                            <h3 class="text-xl font-bold mb-4 flex items-center text-gray-900 dark:text-white"><span class="w-2 h-6 bg-blue-500 rounded-full mr-3"></span>교육용 계정 인증 3단계 가이드</h3>
+                            <div class="space-y-4">
+                                <div class="flex p-4 rounded-xl border border-gray-100 dark:border-gray-700/70 bg-gray-50/50 dark:bg-gray-800/50">
+                                    <div class="shrink-0 mr-4">
+                                        <span class="flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 font-bold text-gray-600 dark:text-gray-300">1</span>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-base font-bold text-gray-900 dark:text-white">캔바 가입 및 로그인</h4>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Google 계정 또는 교육청 메일(@goe.go.kr, @sen.go.kr 등)로 연동하여 무료 회원가입을 완료합니다. (교육청 메일 가입 시 즉시 승인될 확률이 높습니다.)</p>
+                                    </div>
+                                </div>
+                                <div class="flex p-4 rounded-xl border border-gray-100 dark:border-gray-700/70 bg-gray-50/50 dark:bg-gray-800/50">
+                                    <div class="shrink-0 mr-4">
+                                        <span class="flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 font-bold text-gray-600 dark:text-gray-300">2</span>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-base font-bold text-gray-900 dark:text-white">교육용 페이지 접속</h4>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">로그인 후 메인 화면 상단의 <strong>[교육] ➔ [교사 및 학교]</strong> 메뉴를 클릭하고 중앙의 <strong>'교사 인증 받기'</strong> 버튼을 누릅니다.</p>
+                                    </div>
+                                </div>
+                                <div class="flex p-4 rounded-xl border border-gray-100 dark:border-gray-700/70 bg-red-50/30 dark:bg-red-900/10">
+                                    <div class="shrink-0 mr-4">
+                                        <span class="flex items-center justify-center w-8 h-8 rounded-full bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-400 font-bold">3</span>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-base font-bold text-red-700 dark:text-red-400">재직 서류 업로드 (필수 주의사항)</h4>
+                                        <p class="text-sm text-gray-700 dark:text-gray-300 mt-1">자동 승인이 되지 않는 경우, 학교에서 발급받은 <strong>나이스(NEIS) 재직증명서</strong>를 사진 찍어 업로드해야 합니다.<br>
+                                        <span class="font-bold text-red-500 block mt-1">※ 주의사항: 개인정보 보호를 위해 재직증명서의 '주민등록번호 뒷자리'는 반드시 포스트잇으로 가리거나 지워서 제출하셔야 합니다. (제출 후 보통 당일~며칠 내 승인 완료)</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== 파트 2 탭 ==================== -->
+            <section id="tab-part2" class="tab-content min-h-full">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700/50 p-6 sm:p-8 min-h-full">
+                    <div class="flex flex-col sm:flex-row sm:items-center mb-8 border-b border-gray-100 dark:border-gray-700 pb-4">
+                        <span class="inline-flex items-center justify-center w-12 h-12 bg-green-100 text-green-600 dark:bg-green-900/50 dark:text-green-300 rounded-xl font-black text-2xl mb-4 sm:mb-0 sm:mr-4">2</span>
+                        <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white">캔바 기초 활용: 에디터 완벽 분석</h2>
+                    </div>
+
+                    <div class="space-y-10 text-gray-700 dark:text-gray-300">
+                        
+                        <div class="group">
+                            <h3 class="text-xl font-bold mb-4 flex items-center text-gray-900 dark:text-white"><span class="w-2 h-6 bg-green-500 rounded-full mr-3"></span>1. 메인 홈 화면 - 모든 디자인의 시작</h3>
+                            <p class="mb-4 leading-relaxed">캔바의 메인 홈 화면 상단에 있는 <strong>'돋보기(검색창)'</strong>는 마법의 지팡이입니다. 처음부터 빈 도화지에서 시작하려 하지 마세요. "학부모 총회 안내장", "초등학교 시간표", "역사 신문" 등 지금 선생님께 필요한 키워드를 검색하여 고퀄리티 템플릿을 선택하는 것이 캔바 활용의 핵심입니다.</p>
+                        </div>
+
+                        <div class="group">
+                            <h3 class="text-xl font-bold mb-4 flex items-center text-gray-900 dark:text-white"><span class="w-2 h-6 bg-teal-500 rounded-full mr-3"></span>2. 작업 에디터의 4가지 핵심 패널 (좌측 메뉴)</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="p-5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover-lift">
+                                    <h4 class="font-bold text-lg mb-2 text-gray-900 dark:text-white"><i class="fas fa-layer-group text-blue-500 mr-2"></i>디자인 (템플릿)</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">작업 중에도 언제든지 다른 템플릿으로 디자인을 통째로 교체할 수 있습니다. 슬라이드를 추가하고 다른 템플릿의 예쁜 페이지 장점만 가져와 섞어 쓰는 것도 훌륭한 방법입니다.</p>
+                                </div>
+                                <div class="p-5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover-lift">
+                                    <h4 class="font-bold text-lg mb-2 text-gray-900 dark:text-white"><i class="fas fa-shapes text-green-500 mr-2"></i>요소 (그래픽, 사진, 선)</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">도형, 일러스트, 선, 사진 등을 도화지에 추가합니다. 검색창에 "수채화", "3D", "귀여운 강아지", "칠판" 과 같은 스타일 키워드를 구체적으로 입력할수록 더 멋진 그래픽을 찾을 수 있습니다.</p>
+                                </div>
+                                <div class="p-5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover-lift">
+                                    <h4 class="font-bold text-lg mb-2 text-gray-900 dark:text-white"><i class="fas fa-font text-purple-500 mr-2"></i>텍스트</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">글상자를 추가합니다. 글씨체 변경과 글자 크기 조절뿐만 아니라, 상단의 [효과] 버튼을 눌러 글씨에 그림자, 외곽선, 네온빛, 둥근 곡선 등의 화려한 타이포그래피 효과를 줄 수 있습니다.</p>
+                                </div>
+                                <div class="p-5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover-lift">
+                                    <h4 class="font-bold text-lg mb-2 text-gray-900 dark:text-white"><i class="fas fa-cloud-upload-alt text-pink-500 mr-2"></i>업로드 항목</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">내 PC나 스마트폰에 있는 학생들의 현장체험학습 사진, 학교 로고, 교가 동영상 파일 등을 마우스로 캔바 안으로 끌어다 놓아(Drag & Drop) 나만의 자료로 재가공합니다.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="group">
+                            <h3 class="text-xl font-bold mb-4 flex items-center text-gray-900 dark:text-white"><span class="w-2 h-6 bg-yellow-500 rounded-full mr-3"></span>3. 작업 속도를 2배 높여주는 필수 단축키</h3>
+                            <p class="text-sm mb-3 text-gray-500 dark:text-gray-400">※ 키보드가 영문 모드일 때 캔버스 빈 공간을 클릭하고 아래 알파벳을 눌러보세요!</p>
+                            <div class="bg-gray-100 dark:bg-gray-900 rounded-xl p-4 sm:p-6 border border-gray-200 dark:border-gray-700 flex flex-wrap gap-4">
+                                <div class="flex items-center bg-white dark:bg-gray-800 px-4 py-2 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                                    <kbd class="font-mono font-bold bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded text-gray-800 dark:text-white mr-3">T</kbd> 텍스트(Text) 상자 추가
+                                </div>
+                                <div class="flex items-center bg-white dark:bg-gray-800 px-4 py-2 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                                    <kbd class="font-mono font-bold bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded text-gray-800 dark:text-white mr-3">R</kbd> 사각형(Rectangle) 추가
+                                </div>
+                                <div class="flex items-center bg-white dark:bg-gray-800 px-4 py-2 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                                    <kbd class="font-mono font-bold bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded text-gray-800 dark:text-white mr-3">C</kbd> 원(Circle) 추가
+                                </div>
+                                <div class="flex items-center bg-white dark:bg-gray-800 px-4 py-2 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                                    <kbd class="font-mono font-bold bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded text-gray-800 dark:text-white mr-3">L</kbd> 선(Line) 추가
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== 파트 3 탭 ==================== -->
+            <section id="tab-part3" class="tab-content min-h-full">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700/50 p-6 sm:p-8 min-h-full">
+                    <div class="flex flex-col sm:flex-row sm:items-center mb-8 border-b border-gray-100 dark:border-gray-700 pb-4">
+                        <span class="inline-flex items-center justify-center w-12 h-12 bg-pink-100 text-pink-600 dark:bg-pink-900/50 dark:text-pink-300 rounded-xl font-black text-2xl mb-4 sm:mb-0 sm:mr-4">3</span>
+                        <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white">캔바 사용 설명서: 실전 디자인 테크닉</h2>
+                    </div>
+                    
+                    <div class="space-y-8 text-gray-700 dark:text-gray-300">
+                        
+                        <!-- 테크닉 1 -->
+                        <div class="flex flex-col sm:flex-row gap-6 p-5 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-200 dark:border-gray-700 hover-lift transition-transform">
+                            <div class="sm:w-1/3 flex flex-col items-center justify-center bg-white dark:bg-gray-900 rounded-xl p-4 border border-gray-100 dark:border-gray-600 shadow-sm">
+                                <i class="fas fa-eraser text-4xl text-pink-500 mb-3"></i>
+                                <h4 class="font-bold text-lg text-center text-gray-900 dark:text-white">배경 지우기 (일명 누끼)</h4>
+                            </div>
+                            <div class="sm:w-2/3 flex flex-col justify-center">
+                                <p class="leading-relaxed mb-3">전 세계 교사들이 캔바를 가장 사랑하는 이유 중 하나입니다. 학생들의 사진이나 특정 물건 사진에서 복잡한 배경을 단 1초 만에 깔끔하게 투명하게 지워줍니다.</p>
+                                <p class="text-sm bg-pink-50 dark:bg-pink-900/20 text-pink-700 dark:text-pink-300 p-3 rounded-lg border border-pink-100 dark:border-pink-800/50"><strong>사용법:</strong> 캔버스에 사진을 넣고 클릭 ➔ 상단 메뉴 바에서 <strong>[사진 편집]</strong> 클릭 ➔ 좌측 매직 스튜디오 효과 탭의 <strong>[BG Remover (배경 지우개)]</strong> 클릭</p>
+                            </div>
+                        </div>
+
+                        <!-- 테크닉 2 -->
+                        <div class="flex flex-col sm:flex-row gap-6 p-5 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-200 dark:border-gray-700 hover-lift transition-transform">
+                            <div class="sm:w-1/3 flex flex-col items-center justify-center bg-white dark:bg-gray-900 rounded-xl p-4 border border-gray-100 dark:border-gray-600 shadow-sm">
+                                <i class="fas fa-crop-alt text-4xl text-blue-500 mb-3"></i>
+                                <h4 class="font-bold text-lg text-center text-gray-900 dark:text-white">프레임 (사진 틀) 활용하기</h4>
+                            </div>
+                            <div class="sm:w-2/3 flex flex-col justify-center">
+                                <p class="leading-relaxed mb-3">학생 사진을 네모난 원본 그대로 올리면 촌스러워 보입니다. 동그라미, 별 모양, 찢어진 종이, 모바일 화면, 폴라로이드 등 원하는 모양의 '틀' 안으로 사진을 쏙 집어넣어 전문가처럼 연출하세요.</p>
+                                <p class="text-sm bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 p-3 rounded-lg border border-blue-100 dark:border-blue-800/50"><strong>사용법:</strong> 좌측 [요소] 메뉴 검색창에 <strong>'프레임'</strong> 검색 ➔ 원하는 모양의 프레임을 도화지에 꺼내기 ➔ 내가 가진 사진을 마우스로 쭉 끌어서 프레임 위로 던지듯 드롭(Drop)</p>
+                            </div>
+                        </div>
+
+                        <!-- 테크닉 3 -->
+                        <div class="flex flex-col sm:flex-row gap-6 p-5 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-200 dark:border-gray-700 hover-lift transition-transform">
+                            <div class="sm:w-1/3 flex flex-col items-center justify-center bg-white dark:bg-gray-900 rounded-xl p-4 border border-gray-100 dark:border-gray-600 shadow-sm">
+                                <i class="fas fa-layer-group text-4xl text-purple-500 mb-3"></i>
+                                <h4 class="font-bold text-lg text-center text-gray-900 dark:text-white">레이어(위치 정렬)와 그룹화</h4>
+                            </div>
+                            <div class="sm:w-2/3 flex flex-col justify-center">
+                                <p class="leading-relaxed mb-3">도형 위에 글씨를 썼는데 글씨가 안 보인다면? 삭제된 게 아니라 도형 뒤로 숨어 들어간 것입니다. 여러 개체의 앞뒤 순서를 정하고, 묶어서 관리하는 방법을 익혀야 작업 스트레스가 없어집니다.</p>
+                                <p class="text-sm bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 p-3 rounded-lg border border-purple-100 dark:border-purple-800/50"><strong>사용법:</strong> 숨은 개체 또는 덮고 있는 개체 우클릭 ➔ <strong>[레이어]</strong> ➔ '앞으로 가져오기' 또는 '맨 뒤로 보내기'. 여러 요소를 드래그하여 다중 선택 후 우클릭 ➔ <strong>[그룹화] (Ctrl+G)</strong> 시 하나의 덩어리로 이동/복사 가능.</p>
+                            </div>
+                        </div>
+
+                        <!-- 테크닉 4 -->
+                        <div class="flex flex-col sm:flex-row gap-6 p-5 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-200 dark:border-gray-700 hover-lift transition-transform">
+                            <div class="sm:w-1/3 flex flex-col items-center justify-center bg-white dark:bg-gray-900 rounded-xl p-4 border border-gray-100 dark:border-gray-600 shadow-sm">
+                                <i class="fas fa-share-square text-4xl text-green-500 mb-3"></i>
+                                <h4 class="font-bold text-lg text-center text-gray-900 dark:text-white">공유 및 파일 다운로드</h4>
+                            </div>
+                            <div class="sm:w-2/3 flex flex-col justify-center">
+                                <p class="leading-relaxed mb-3">완성된 디자인은 우측 상단 <strong>[공유]</strong> 버튼을 통해 세상 밖으로 내보냅니다. 학생들에게 링크만 보내서 스마트폰으로 보게 할 수도 있고, 종이로 인쇄할 파일로 저장할 수도 있습니다.</p>
+                                <ul class="text-sm text-gray-700 dark:text-gray-300 space-y-2 list-disc list-inside bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-100 dark:border-gray-600">
+                                    <li><strong>PNG / JPG:</strong> 스마트폰 전송, 홈페이지 게시판 업로드용 사진 파일</li>
+                                    <li><strong>인쇄용 PDF:</strong> 글씨나 이미지가 깨짐 없이 종이에 선명하게 인쇄될 때 필수</li>
+                                    <li><strong>링크 공유:</strong> [링크가 있는 모든 사용자] + 권한을 [보기 전용]으로 변경 후 주소 복사하여 카톡/클래스팅 발송</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== 파트 4 탭 ==================== -->
+            <section id="tab-part4" class="tab-content min-h-full">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700/50 p-6 sm:p-8 min-h-full">
+                    <div class="flex flex-col sm:flex-row sm:items-center mb-8 border-b border-gray-100 dark:border-gray-700 pb-4">
+                        <span class="inline-flex items-center justify-center w-12 h-12 bg-purple-100 text-purple-600 dark:bg-purple-900/50 dark:text-purple-300 rounded-xl font-black text-2xl mb-4 sm:mb-0 sm:mr-4">4</span>
+                        <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white">업무 자동화의 꽃, 명찰 대량 제작</h2>
+                    </div>
+                    
+                    <div class="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 p-5 sm:p-6 rounded-2xl border border-purple-100 dark:border-purple-800/30 mb-8">
+                        <h3 class="font-bold text-lg sm:text-xl mb-2 text-purple-800 dark:text-purple-300"><i class="fas fa-bolt text-yellow-500 mr-2"></i>대량 제작(Bulk Create)이란?</h3>
+                        <p class="text-gray-700 dark:text-gray-300 leading-relaxed">엑셀/시트에 있는 데이터(이름, 번호, 역할)를 캔바 디자인 템플릿과 연동하여, <strong>클릭 한 번에 학급 전체(30장)의 명찰, 상장, 시간표를 1분 만에 자동 완성</strong>해 주는 교사 초격차 업무 스킬입니다.</p>
+                    </div>
+
+                    <h3 class="text-xl font-bold mb-6 flex items-center text-gray-900 dark:text-white"><span class="w-2 h-6 bg-purple-500 rounded-full mr-3"></span>명찰 대량 제작 4단계 마스터하기</h3>
+                    
+                    <div class="grid grid-cols-1 gap-4">
+                        <div class="flex p-4 rounded-xl border border-gray-100 dark:border-gray-700/70 bg-gray-50/50 dark:bg-gray-800/50 hover-lift">
+                            <div class="shrink-0 mr-4">
+                                <span class="flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 font-bold text-gray-600 dark:text-gray-300">1</span>
+                            </div>
+                            <div>
+                                <h4 class="text-base sm:text-lg font-bold text-gray-900 dark:text-white">데이터 준비하기</h4>
+                                <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">평소에는 엑셀에 '이름', '역할' 등을 적고 <strong>CSV 파일</strong>로 저장해둡니다. 연수 중에는 캔바 자체의 [데이터 수동 입력] 기능을 눌러 표에 학생 이름 3개를 임의로 타이핑해봅니다.</p>
+                            </div>
+                        </div>
+                        <div class="flex p-4 rounded-xl border border-gray-100 dark:border-gray-700/70 bg-gray-50/50 dark:bg-gray-800/50 hover-lift">
+                            <div class="shrink-0 mr-4">
+                                <span class="flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 font-bold text-gray-600 dark:text-gray-300">2</span>
+                            </div>
+                            <div>
+                                <h4 class="text-base sm:text-lg font-bold text-gray-900 dark:text-white">대량 제작 앱 켜기</h4>
+                                <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">에디터 좌측 하단의 <strong>[앱]</strong> 메뉴를 클릭하고 돋보기 검색창에 <strong>'대량' 또는 'Bulk'</strong>를 검색하여 종이 여러 장이 겹쳐진 아이콘의 앱을 클릭해 활성화합니다.</p>
+                            </div>
+                        </div>
+                        <div class="flex p-4 rounded-xl border-l-4 border-l-red-500 bg-red-50/50 dark:bg-red-900/10 shadow-sm hover-lift">
+                            <div class="shrink-0 mr-4">
+                                <span class="flex items-center justify-center w-8 h-8 rounded-full bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-400 font-bold">3</span>
+                            </div>
+                            <div>
+                                <h4 class="text-base sm:text-lg font-bold text-red-700 dark:text-red-400">데이터 연결하기 (가장 중요★)</h4>
+                                <p class="text-sm sm:text-base text-gray-700 dark:text-gray-300 mt-1">캔버스 도화지 중앙의 명찰 디자인에서 이름이 바뀔 글상자(예: "홍길동") 위에서 마우스 <strong>우클릭</strong>을 합니다. ➔ 메뉴 중 <strong>[데이터 연결]</strong> 클릭 ➔ 리스트에서 <strong>'이름'</strong> 필드를 선택합니다.<br>
+                                <span class="text-xs font-bold text-red-500/80 dark:text-red-400/80 block mt-2 bg-white/50 dark:bg-gray-900/50 p-2 rounded">※ 연결 성공 확인법: 도화지의 텍스트가 {이름} 처럼 양옆에 중괄호가 쳐진 형태로 바뀌어야 제대로 연결된 것입니다.</span></p>
+                            </div>
+                        </div>
+                        <div class="flex p-4 rounded-xl border border-gray-100 dark:border-gray-700/70 bg-gray-50/50 dark:bg-gray-800/50 hover-lift">
+                            <div class="shrink-0 mr-4">
+                                <span class="flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 font-bold text-gray-600 dark:text-gray-300">4</span>
+                            </div>
+                            <div>
+                                <h4 class="text-base sm:text-lg font-bold text-gray-900 dark:text-white">자동 생성 및 다운로드</h4>
+                                <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">좌측 하단 <strong>[계속] ➔ [페이지 생성]</strong> 버튼을 누르면 새로운 인터넷 탭이 열리면서 입력한 모든 학생의 명찰 디자인 페이지가 자동 완성됩니다. 우측 상단 [공유] > [다운로드]에서 '인쇄용 PDF'로 받아 종이에 출력하면 끝입니다!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== 실습 데이터 탭 ==================== -->
+            <section id="tab-practice" class="tab-content h-full">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700/50 p-6 sm:p-8 h-full flex flex-col">
+                    <div class="flex justify-between items-center mb-6 border-b border-gray-100 dark:border-gray-700 pb-4 shrink-0">
+                        <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white"><i class="fas fa-database text-green-500 mr-3"></i>실습 데이터</h2>
+                        <span class="text-xs sm:text-sm font-bold bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-400 px-3 py-1.5 rounded-full animate-pulse border border-green-200 dark:border-green-800"><i class="fas fa-sync-alt mr-1"></i>실시간 연동중</span>
+                    </div>
+                    
+                    <!-- 실습데이터 리스트 컨테이너 -->
+                    <div id="practice-data-container" class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 overflow-y-auto pr-2 pb-10">
+                        <div class="col-span-full text-center py-12 text-gray-500 flex flex-col items-center">
+                            <i class="fas fa-circle-notch fa-spin text-4xl text-green-400 mb-4"></i>
+                            <p>구글 시트에서 데이터를 불러오는 중입니다...</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== 참고 사이트 탭 ==================== -->
+            <section id="tab-reference" class="tab-content h-full">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700/50 p-6 sm:p-8 h-full flex flex-col">
+                    <div class="flex justify-between items-center mb-6 border-b border-gray-100 dark:border-gray-700 pb-4 shrink-0">
+                        <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white"><i class="fas fa-globe text-blue-500 mr-3"></i>참고 사이트</h2>
+                        <span class="text-xs sm:text-sm font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-400 px-3 py-1.5 rounded-full animate-pulse border border-blue-200 dark:border-blue-800"><i class="fas fa-sync-alt mr-1"></i>실시간 연동중</span>
+                    </div>
+                    
+                    <!-- 참고사이트 리스트 컨테이너 -->
+                    <div id="reference-data-container" class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 overflow-y-auto pr-2 pb-10">
+                        <div class="col-span-full text-center py-12 text-gray-500 flex flex-col items-center">
+                            <i class="fas fa-circle-notch fa-spin text-4xl text-blue-400 mb-4"></i>
+                            <p>구글 시트에서 데이터를 불러오는 중입니다...</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Admin Auth Modal -->
+    <div id="admin-modal" class="fixed inset-0 bg-black/70 z-[100] hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300" style="margin:0;">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 sm:p-8 w-[90%] max-w-sm transform scale-95 transition-transform duration-300 border border-gray-200 dark:border-gray-700" id="admin-modal-content">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-200 dark:border-gray-600">
+                    <i class="fas fa-lock text-2xl text-gray-700 dark:text-gray-300"></i>
+                </div>
+                <h3 class="text-xl font-extrabold text-gray-900 dark:text-white">관리자 인증</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">시트 데이터 접근을 위한 인증번호</p>
+            </div>
+            <div class="mb-6">
+                <input type="password" id="admin-password" class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-center tracking-[0.5em] text-lg font-bold" placeholder="****" autocomplete="off" onkeypress="handleAdminEnter(event)">
+                <p id="admin-error" class="text-red-500 text-sm mt-2 text-center font-bold hidden"><i class="fas fa-exclamation-circle mr-1"></i>인증번호가 일치하지 않습니다.</p>
+            </div>
+            <div class="flex space-x-3">
+                <button onclick="closeAdminModal()" class="flex-1 py-3 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold hover:bg-gray-200 dark:hover:bg-gray-600 transition">취소</button>
+                <button onclick="verifyAdmin()" class="flex-1 py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-500/30">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR Code Fullscreen Modal -->
+    <div id="qr-modal" class="fixed inset-0 bg-black/85 z-[100] hidden flex items-center justify-center backdrop-blur-md opacity-0 transition-opacity duration-300" onclick="closeQrModal(event)" style="margin:0;">
+        <div class="bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-3xl shadow-2xl text-center transform scale-95 transition-transform duration-300 w-[90%] max-w-md border border-gray-200 dark:border-gray-700" id="qr-modal-content" onclick="event.stopPropagation()">
+            <h3 id="qr-modal-title" class="text-xl sm:text-2xl font-extrabold mb-6 text-gray-900 dark:text-white truncate">QR 코드 스캔</h3>
+            <div class="bg-white p-4 rounded-2xl inline-block mb-6 shadow-inner border border-gray-100">
+                <img id="qr-modal-img" src="" alt="QR Code" class="w-48 h-48 sm:w-64 sm:h-64 mx-auto object-contain">
+            </div>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-2 font-semibold">스마트폰 카메라로 스캔하세요</p>
+            <p id="qr-modal-link" class="text-sm text-blue-500 dark:text-blue-400 mb-8 break-all max-w-xs mx-auto line-clamp-2 bg-blue-50 dark:bg-blue-900/20 p-2 rounded-lg"></p>
+            <button onclick="closeQrModal()" class="w-full py-4 rounded-xl bg-gray-900 dark:bg-gray-700 text-white font-bold hover:bg-gray-800 dark:hover:bg-gray-600 transition text-lg shadow-lg">닫기</button>
+        </div>
+    </div>
+
+    <script>
+        // --- Configuration ---
+        const SHEET_ID = '1DkeYhMWKLz2U4c8MdNg-6ntdgyTlaYkrliyWXXXbk8A';
+        const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit`;
+        
+        // Global State
+        let adminAuthCode = "";
+        
+        // --- 탭(Tab) 전환 로직 ---
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Remove active classes
+                tabBtns.forEach(b => {
+                    b.classList.remove('active', 'border-blue-500', 'text-blue-600', 'dark:text-blue-400');
+                    b.classList.add('border-transparent', 'text-gray-500');
+                });
+                tabContents.forEach(c => c.classList.remove('active'));
+
+                // Add active classes to clicked tab
+                btn.classList.remove('border-transparent', 'text-gray-500');
+                btn.classList.add('active', 'border-blue-500', 'text-blue-600', 'dark:text-blue-400');
+                
+                const targetId = btn.getAttribute('data-target');
+                document.getElementById(targetId).classList.add('active');
+            });
+        });
+
+        // --- 다크모드 로직 ---
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        const html = document.documentElement;
+
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            html.classList.add('dark');
+            themeIcon.classList.replace('fa-moon', 'fa-sun');
+        } else {
+            html.classList.remove('dark');
+        }
+
+        themeToggleBtn.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            if (html.classList.contains('dark')) {
+                localStorage.theme = 'dark';
+                themeIcon.classList.replace('fa-moon', 'fa-sun');
+            } else {
+                localStorage.theme = 'light';
+                themeIcon.classList.replace('fa-sun', 'fa-moon');
+            }
+        });
+
+        // --- Google Sheets 데이터 파싱 (GViz API) ---
+        async function fetchSheetData(sheetName) {
+            // 헤더를 0으로 처리하여 첫 줄부터 rows 배열에 데이터로 담기게 강제 설정
+            const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=0&sheet=${encodeURIComponent(sheetName)}`;
+            try {
+                const response = await fetch(url);
+                const text = await response.text();
+                const jsonString = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
+                const data = JSON.parse(jsonString);
+                return data.table.rows;
+            } catch (error) {
+                console.error(`Error fetching sheet ${sheetName}:`, error);
+                return null;
+            }
+        }
+
+        // --- 데이터 렌더링 및 동기화 ---
+        async function initDashboard() {
+            // 1. 설정 데이터 연동 (A2 = rows[1][0], B2 = rows[1][1] - 1행이 헤더일 경우)
+            const settingsRows = await fetchSheetData('설정');
+            if (settingsRows && settingsRows.length > 1) { // 2행(인덱스1) 이상 데이터가 있는지 확인
+                try {
+                    // rows[1] 이 2번째 행 (A2, B2)
+                    const a2Value = settingsRows[1].c[0] ? settingsRows[1].c[0].v : "";
+                    const b2Value = settingsRows[1].c[1] ? settingsRows[1].c[1].v : "대시보드 타이틀 (데이터 없음)";
+                    
+                    // 연수단체(b2Value) 뒤에 연수 주제를 자동으로 결합
+                    const fullTitle = `${b2Value} - 캔바(Canva) 완벽 활용 가이드`;
+                    
+                    adminAuthCode = a2Value;
+                    document.getElementById('nav-title').textContent = fullTitle;
+                    document.title = fullTitle;
+                } catch (e) {
+                    console.error("설정 데이터 파싱 에러", e);
+                    document.getElementById('nav-title').textContent = "설정 데이터 형식 오류";
+                }
+            } else {
+                document.getElementById('nav-title').textContent = "설정 시트 데이터 부족";
+            }
+
+            // 2. 실습데이터 & 참고사이트 데이터 연동
+            const practiceRows = await fetchSheetData('실습데이터');
+            renderList('practice-data-container', practiceRows);
+
+            const referenceRows = await fetchSheetData('참고사이트');
+            renderList('reference-data-container', referenceRows);
+        }
+
+        function renderList(containerId, rows) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = ''; 
+
+            if (!rows || rows.length <= 1) { // 1행(헤더)만 있거나 데이터가 없는 경우
+                container.innerHTML = '<div class="col-span-full text-gray-500 text-center py-8 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-dashed border-gray-300 dark:border-gray-700">입력된 데이터가 없습니다.</div>';
+                return;
+            }
+
+            let htmlContent = '';
+
+            // 인덱스 1(두 번째 행)부터 반복 (인덱스 0은 헤더값으로 무시)
+            for (let i = 1; i < rows.length; i++) {
+                const row = rows[i];
+                if (!row.c || !row.c[0] || !row.c[1]) continue; 
+
+                const title = row.c[0].v || "제목 없음";
+                const link = row.c[1].v || "#";
+                
+                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(link)}`;
+                
+                // 데이터 카드 UI 구성
+                htmlContent += `
+                    <div class="flex flex-col sm:flex-row items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex-1 w-full sm:w-auto mb-4 sm:mb-0 sm:pr-4 text-center sm:text-left">
+                            <h4 class="font-extrabold text-lg text-gray-900 dark:text-white mb-2 line-clamp-2">${title}</h4>
+                            <a href="${link}" target="_blank" class="inline-flex items-center text-sm font-semibold text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-900/30 px-3 py-1.5 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition truncate max-w-[200px] sm:max-w-full">
+                                <i class="fas fa-external-link-alt mr-2 shrink-0"></i><span class="truncate">${link}</span>
+                            </a>
+                        </div>
+                        <div class="shrink-0 cursor-pointer p-1.5 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-100 dark:border-gray-600 hover-lift relative group" onclick="openQrModal('${qrUrl}', '${title.replace(/'/g, "\\'")}', '${link.replace(/'/g, "\\'")}')">
+                            <img src="${qrUrl}" alt="QR Code" class="w-16 h-16 sm:w-20 sm:h-20 object-contain rounded-lg" onerror="this.src='https://placehold.co/150x150/eeeeee/999999?text=QR+Error'">
+                            <div class="absolute inset-0 bg-black/40 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <i class="fas fa-search-plus text-white text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (htmlContent === '') {
+                htmlContent = '<div class="col-span-full text-gray-500 text-center py-8">유효한 링크 데이터가 없습니다.</div>';
+            }
+            
+            container.innerHTML = htmlContent;
+        }
+
+        // --- 모달 로직 ---
+        const adminModal = document.getElementById('admin-modal');
+        const adminModalContent = document.getElementById('admin-modal-content');
+        const adminPasswordInput = document.getElementById('admin-password');
+        const adminError = document.getElementById('admin-error');
+
+        function openAdminModal() {
+            adminModal.classList.remove('hidden');
+            setTimeout(() => {
+                adminModal.classList.remove('opacity-0');
+                adminModalContent.classList.remove('scale-95');
+                adminModalContent.classList.add('scale-100');
+                adminPasswordInput.value = '';
+                adminError.classList.add('hidden');
+                adminPasswordInput.focus();
+            }, 10);
+        }
+
+        function closeAdminModal() {
+            adminModal.classList.add('opacity-0');
+            adminModalContent.classList.remove('scale-100');
+            adminModalContent.classList.add('scale-95');
+            setTimeout(() => adminModal.classList.add('hidden'), 300);
+        }
+
+        function verifyAdmin() {
+            const inputCode = adminPasswordInput.value.trim();
+            if (inputCode === "" || String(inputCode) !== String(adminAuthCode)) {
+                adminError.classList.remove('hidden');
+                adminPasswordInput.classList.add('border-red-500', 'bg-red-50');
+                adminModalContent.classList.add('animate-pulse');
+                setTimeout(() => adminModalContent.classList.remove('animate-pulse'), 500);
+            } else {
+                adminError.classList.add('hidden');
+                closeAdminModal();
+                window.open(SHEET_URL, '_blank');
+            }
+        }
+
+        function handleAdminEnter(event) {
+            if (event.key === 'Enter') verifyAdmin();
+        }
+
+        // QR Modal
+        const qrModal = document.getElementById('qr-modal');
+        const qrModalContent = document.getElementById('qr-modal-content');
+        const qrModalImg = document.getElementById('qr-modal-img');
+        const qrModalTitle = document.getElementById('qr-modal-title');
+        const qrModalLink = document.getElementById('qr-modal-link');
+
+        function openQrModal(imgUrl, title, link) {
+            const highResQrUrl = imgUrl.replace('size=150x150', 'size=400x400');
+            qrModalImg.src = highResQrUrl;
+            qrModalTitle.textContent = title;
+            qrModalLink.textContent = link;
+            
+            qrModal.classList.remove('hidden');
+            setTimeout(() => {
+                qrModal.classList.remove('opacity-0');
+                qrModalContent.classList.remove('scale-95');
+                qrModalContent.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeQrModal(event) {
+            if (event && event.target === qrModalContent) return; 
+            
+            qrModal.classList.add('opacity-0');
+            qrModalContent.classList.remove('scale-100');
+            qrModalContent.classList.add('scale-95');
+            setTimeout(() => {
+                qrModal.classList.add('hidden');
+                qrModalImg.src = '';
+            }, 300);
+        }
+
+        // 앱 초기화 실행
+        document.addEventListener('DOMContentLoaded', initDashboard);
+
+    </script>
+</body>
+</html>
